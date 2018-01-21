@@ -1,27 +1,34 @@
 #!/usr/bin/env bash
 
+operation=$1
+matrix1=$2
+matrix2=$3
+
 #Prints out the dimensions of the matrix.
 dims() {
-    echo $1
+    echo $operation
 }
 
 #Reflects the elements of the matrix along the main diagonal.
 transpose() {
-    echo $1
+    echo $operation
 }
 
 #Returns a row with each element representing a mean of the corresponding column.
 mean() {
-    echo $1
+    echo $operation
 }
 
 #Returns a new matrix which is a result of adding two matrices element-wise.
 #Returns an error if two matrices have different dimensions.
 add() {
-    echo $1
+    echo $operation
 }
 
 #Produces an MxP matrix as a product of MxN and NxP matrices.
 multiply() {
-    echo $1
+    echo $operation
 }
+
+#Invokes the right function based on operation passed as the first parameter to the script.
+$operation "${@:2}"
