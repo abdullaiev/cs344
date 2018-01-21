@@ -1,0 +1,48 @@
+┏┓ ┏━╸┏━╸╻┏┓╻┏┓╻╻┏┓╻┏━╸   ┏┳┓┏━┓╺┳╸┏━┓╻╻ ╻   ╺┳╸┏━╸┏━┓╺┳╸
+┣┻┓┣╸ ┃╺┓┃┃┗┫┃┗┫┃┃┗┫┃╺┓   ┃┃┃┣━┫ ┃ ┣┳┛┃┏╋┛    ┃ ┣╸ ┗━┓ ┃ 
+┗━┛┗━╸┗━┛╹╹ ╹╹ ╹╹╹ ╹┗━┛   ╹ ╹╹ ╹ ╹ ╹┗╸╹╹ ╹    ╹ ┗━╸┗━┛ ╹
+Unit test 1: basic errors
+# (running score = 0/0)
+	Passed: too many args to matrix dims (1/1)
+	Passed: no args to matrix add (1/1)
+	Passed: multiplying incompatible matrices (5/5)
+	Passed: adding incompatible matrices (4/4)
+	Passed: tranpose unreadable file (2/2)
+	Passed: get dims of nonexistent file (1/1)
+	Passed: matrix badcommand (1/1)
+Unit test 2: matrix dims test
+# (running score = 15/15)
+	Passed: Stdin: ("68 95" == "68 95") (3/3)
+	Passed: Stdin: ("88 98" == "88 98") (3/3)
+	Passed: Stdin: ("67 57" == "67 57") (3/3)
+	Passed: File input: ("87 64" == "87 64") (3/3)
+	Passed: File input: ("56 85" == "56 85") (3/3)
+	Passed: File input: ("84 98" == "84 98") (3/3)
+Unit test 3: matrix transpose hardcoded test
+# (running score = 33/33)
+	Passed: m1 == T(m2) and T(m1) == m2 (10/10)
+Unit test 4: matrix transpose involution test
+# (running score = 43/43)
+	Passed: m1 == T(T(m1)) (5/5)
+	Passed: m2 == T(T(m2)) (5/5)
+	Passed: m3 == T(T(m3)) (5/5)
+Unit test 5: matrix mean test
+# (running score = 58/58)
+	Passed: zero matrix (2/2)
+	Passed: ones matrix (5/5)
+	Passed: identity matrix (5/5)
+	Passed: hardcoded matrix (15/15)
+Unit test 6: matrix add test
+# (running score = 85/85)
+	Passed: 0 + 0 == 0 (2/2)
+	Passed: X + 0 == X (5/5)
+	Passed: 0 + X == X (5/5)
+	Passed: A + B  == B + A (1/1)
+	Passed: m1 + m2 == m3 (hardcoded matrix) (15/15)
+Unit test 7: matrix multiply test
+# (running score = 113/113)
+	Passed: I * M == M (5/5)
+	Passed: M * I == M (5/5)
+	Passed: 0 * M == 0 (5/5)
+	Passed: m3 == m1 * m2 (hardcoded matrix) (20/20)
+# Final grade: 148/148
