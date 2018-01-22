@@ -85,17 +85,42 @@ onlyTwoParams() {
   fi
 }
 
+#Checks if two matrices have the same dimensions.
+matricesCompatibleForAddition() {
+    m1Dimensions="$(dims $matrix1)"
+    m2Dimensions="$(dims $matrix2)"
+
+    if [[ "$m1Dimensions" != "$m2Dimensions" ]]; then
+        echo "Two matrices should have the same dimensions for addition!" >&2
+        exit 500
+    fi
+}
+
+#Cheks if two matrices are compatible for multiplication.
+matricesCompatibleForProduct() {
+    m1Dimensions="$(dims $matrix1)"
+    m2Dimensions="$(dims $matrix2)"
+}
+
 #Prints out the dimensions of the matrix.
 dims() {
     lastLine=""
     rows=0
     columns=0
 
+    #If the argument was passed to this function, use it as the matrix file.
+    #Otherwise, use $matrix1 global variable.
+    if (( $# == 1 )); then
+        matrix=$1
+    else
+        matrix=$matrix1
+    fi
+
     #Iterate over each line of the file to count the number of rows.
     while read -r line ; do
         lastLine=$line
         rows=$(expr $rows + 1)
-    done < $matrix1
+    done < $matrix
 
     #Iterate over every number in the line to count the number of columns.
     for number in $lastLine
@@ -119,12 +144,14 @@ mean() {
 #Returns a new matrix which is a result of adding two matrices element-wise.
 #Returns an error if two matrices have different dimensions.
 add() {
+    matricesCompatibleForAddition
     echo $operation
 }
 
 #Produces an MxP matrix as a product of MxN and NxP matrices.
 multiply() {
     echo $operation
+    matricesCompatibleForProduct
 }
 
 #Invokes the right function based on operation passed as the first parameter to the script.
