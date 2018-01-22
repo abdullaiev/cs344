@@ -6,6 +6,7 @@
 #Check whether the first matrix should be read from a file or stdin.
 #Give other variables names for readability purposes.
 operation=$1
+params=$#
 
 #Create a folder for temporary files. Clean up any previous temp files.
 rm -rf ./temp
@@ -30,26 +31,41 @@ fi
 
 #Checks that matrix 1 file is readable before attempting to read it.
 checkMatrix1File() {
-  if ! [ -r $matrix1 ];
-  then
-      echo "$matrix1 is not readable!"
-      exit 1
-  fi
+    if ! [ -r $matrix1 ];
+    then
+        echo "$matrix1 is not readable!" >&2
+        exit 1
+    fi
 }
 
-#Same as above ^^
+#Same as above ^^.
 checkMatrix2File() {
-  if ! [ -r $matrix2 ];
-  then
-      echo "$matrix2 is not readable!"
+    if ! [ -r $matrix2 ]; then
+        echo "$matrix2 is not readable!" >&2
+        exit 1
+    fi
+}
+
+#Checks that only one matrix has been passed as a parameter.
+onlyOneParam() {
+    if (( params > 2 )); then
+        echo "Illegal invocation. Number of parameters is invalid. Syntax: matrix [COMMAND] [MATRIX]" >&2
+        exit 1
+    fi
+}
+
+#Checks that only two matrices have been passed as parameters.
+onlyTwoParams() {
+  if (( params > 3 )); then
+      echo "Illegal invocation. Number of parameters is invalid. Syntax: matrix [COMMAND] [MATRIX1] [MATRIX2]" >&2
       exit 1
   fi
 }
-
 
 #Prints out the dimensions of the matrix.
 dims() {
     checkMatrix1File
+    onlyOneParam
 
     lastLine=""
     rows=0
@@ -73,6 +89,7 @@ dims() {
 #Reflects the elements of the matrix along the main diagonal.
 transpose() {
     checkMatrix1File
+    onlyOneParam
 
     echo $operation
 }
@@ -80,6 +97,7 @@ transpose() {
 #Returns a row with each element representing a mean of the corresponding column.
 mean() {
     checkMatrix1File
+    onlyOneParam
 
     echo $operation
 }
@@ -89,6 +107,7 @@ mean() {
 add() {
     checkMatrix1File
     checkMatrix2File
+    onlyTwoParams
 
     echo $operation
 }
@@ -97,6 +116,7 @@ add() {
 multiply() {
     checkMatrix1File
     checkMatrix2File
+    onlyTwoParams
 
     echo $operation
 }
