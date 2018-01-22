@@ -1,12 +1,37 @@
 #!/usr/bin/env bash
+#CS344 400 W2018
+#Program 1 - matrices
+#Illia Abdullaiev
 
+#Check whether the first matrix should be read from a file or stdin.
+#Give other variables names for readability purposes.
 operation=$1
-matrix1=$2
-matrix2=$3
+
+if [ -t 0 ]; then
+    #If there is nothing in stdin, treat second and the third parameters as matrix files.
+    matrix1=$2
+    matrix2=$3
+else
+    #Create a folder for temporary files. Clean up any previous temp files.
+    rm -rf ./temp
+    mkdir temp
+
+    #Create the temporary file to store the contents of stdin.
+    tempFile="./temp/$$"
+
+    #Write contents of stdin into the temporary file.
+    while read -r line ; do
+        echo $line >> $tempFile
+    done
+
+    #Point matrix1 to the temporary file.
+    matrix1=$tempFile
+fi
 
 #Prints out the dimensions of the matrix.
 dims() {
     echo $operation
+    echo $matrix1
 }
 
 #Reflects the elements of the matrix along the main diagonal.
