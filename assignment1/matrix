@@ -7,6 +7,7 @@
 #Give other variables names for readability purposes.
 operation=$1
 params=$#
+fromStdin=0
 
 #Create a folder for temporary files. Clean up any previous temp files.
 rm -rf ./temp
@@ -16,6 +17,9 @@ if [ -t 0 ]; then
     matrix1=$2
     matrix2=$3
 else
+    #Set from stdin flag to true for future use.
+    fromStdin=1
+
     #Create the temporary file to store the contents of stdin.
     mkdir temp
     tempFile="./temp/$$"
@@ -31,34 +35,51 @@ fi
 
 #Checks that matrix 1 file is readable before attempting to read it.
 checkMatrix1File() {
+    if ! [ -a $matrix1 ];
+    then
+        echo "$matrix1 does not exist!" >&2
+        exit 500
+    fi
+
     if ! [ -r $matrix1 ];
     then
         echo "$matrix1 is not readable!" >&2
-        exit 1
+        exit 500
     fi
 }
 
 #Same as above ^^.
 checkMatrix2File() {
+    if ! [ -a $matrix2 ];
+    then
+        echo "$matrix2 does not exist!" >&2
+        exit 500
+    fi
+
     if ! [ -r $matrix2 ]; then
         echo "$matrix2 is not readable!" >&2
-        exit 1
+        exit 500
     fi
 }
 
 #Checks that only one matrix has been passed as a parameter.
 onlyOneParam() {
+    if ((fromStdin > 0)) && ((params > 1)); then
+        echo "Illegal invocation. Number of parameters is invalid. Syntax: cat [MATRIX_FILE] | ./matrix" >&2
+        exit 500
+    fi
+
     if (( params > 2 )); then
-        echo "Illegal invocation. Number of parameters is invalid. Syntax: matrix [COMMAND] [MATRIX]" >&2
-        exit 1
+        echo "Illegal invocation. Number of parameters is invalid. Syntax: ./matrix [COMMAND] [MATRIX_FILE]" >&2
+        exit 500
     fi
 }
 
 #Checks that only two matrices have been passed as parameters.
 onlyTwoParams() {
   if (( params > 3 )); then
-      echo "Illegal invocation. Number of parameters is invalid. Syntax: matrix [COMMAND] [MATRIX1] [MATRIX2]" >&2
-      exit 1
+      echo "Illegal invocation. Number of parameters is invalid. Syntax: ./matrix [COMMAND] [MATRIX1_FILE] [MATRIX2_FILE]" >&2
+      exit 500
   fi
 }
 
@@ -122,4 +143,12 @@ multiply() {
 }
 
 #Invokes the right function based on operation passed as the first parameter to the script.
-$operation "${@:2}"
+case "$1" in
+  dims | transpose | mean | add | multiply)
+    $1
+    ;;
+  *)
+    echo "$1 is not supported. Syntax: ./matrix [dims | transpose | mean | add | multiply] [MATRIX_FILE1] [(MATRIX_FILE2)]" >&2
+    exit 500
+    ;;
+esac
