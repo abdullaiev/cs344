@@ -97,9 +97,21 @@ matricesCompatibleForAddition() {
 }
 
 #Cheks if two matrices are compatible for multiplication.
+#That is, if two matrices MxN and NxP have the same N, they're compatible.
 matricesCompatibleForProduct() {
     m1Dimensions="$(dims $matrix1)"
     m2Dimensions="$(dims $matrix2)"
+
+    #Last character of the string.
+    N1=${m1Dimensions: -1}
+
+    #First character of the string.
+    N2=${m2Dimensions:0:1}
+
+    if [[ "$N1" != "$N2" ]]; then
+        echo "Two matrices MxN and NxP should have the same N for multiplication!" >&2
+        exit 500
+    fi
 }
 
 #Prints out the dimensions of the matrix.
@@ -150,8 +162,8 @@ add() {
 
 #Produces an MxP matrix as a product of MxN and NxP matrices.
 multiply() {
-    echo $operation
     matricesCompatibleForProduct
+    echo $operation
 }
 
 #Invokes the right function based on operation passed as the first parameter to the script.
