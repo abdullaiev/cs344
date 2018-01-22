@@ -64,20 +64,22 @@ checkMatrix2File() {
 
 #Checks that only one matrix has been passed as a parameter.
 onlyOneParam() {
-    if ((fromStdin > 0)) && ((params > 1)); then
-        echo "Illegal invocation. Number of parameters is invalid. Syntax: cat [MATRIX_FILE] | ./matrix" >&2
-        exit 500
-    fi
-
-    if (( params > 2 )); then
-        echo "Illegal invocation. Number of parameters is invalid. Syntax: ./matrix [COMMAND] [MATRIX_FILE]" >&2
-        exit 500
+    if ((fromStdin > 0)); then
+        if ((params != 1)); then
+            echo "Illegal invocation. Number of parameters is invalid. Syntax: cat [MATRIX_FILE] | ./matrix" >&2
+            exit 500
+        fi
+    else
+        if (( params != 2 )); then
+            echo "Illegal invocation. Number of parameters is invalid. Syntax: ./matrix [COMMAND] [MATRIX_FILE]" >&2
+            exit 500
+        fi
     fi
 }
 
 #Checks that only two matrices have been passed as parameters.
 onlyTwoParams() {
-  if (( params > 3 )); then
+  if ((params != 3 )); then
       echo "Illegal invocation. Number of parameters is invalid. Syntax: ./matrix [COMMAND] [MATRIX1_FILE] [MATRIX2_FILE]" >&2
       exit 500
   fi
@@ -85,9 +87,6 @@ onlyTwoParams() {
 
 #Prints out the dimensions of the matrix.
 dims() {
-    checkMatrix1File
-    onlyOneParam
-
     lastLine=""
     rows=0
     columns=0
@@ -109,46 +108,40 @@ dims() {
 
 #Reflects the elements of the matrix along the main diagonal.
 transpose() {
-    checkMatrix1File
-    onlyOneParam
-
     echo $operation
 }
 
 #Returns a row with each element representing a mean of the corresponding column.
 mean() {
-    checkMatrix1File
-    onlyOneParam
-
     echo $operation
 }
 
 #Returns a new matrix which is a result of adding two matrices element-wise.
 #Returns an error if two matrices have different dimensions.
 add() {
-    checkMatrix1File
-    checkMatrix2File
-    onlyTwoParams
-
     echo $operation
 }
 
 #Produces an MxP matrix as a product of MxN and NxP matrices.
 multiply() {
-    checkMatrix1File
-    checkMatrix2File
-    onlyTwoParams
-
     echo $operation
 }
 
 #Invokes the right function based on operation passed as the first parameter to the script.
 case "$1" in
-  dims | transpose | mean | add | multiply)
-    $1
+    dims | transpose | mean)
+        checkMatrix1File
+        onlyOneParam
+        $1
     ;;
-  *)
-    echo "$1 is not supported. Syntax: ./matrix [dims | transpose | mean | add | multiply] [MATRIX_FILE1] [(MATRIX_FILE2)]" >&2
-    exit 500
+    add | multiply)
+        checkMatrix1File
+        checkMatrix2File
+        onlyTwoParams
+        $1
+    ;;
+    *)
+        echo "$1 is not supported. Syntax: ./matrix [dims | transpose | mean | add | multiply] [MATRIX_FILE1] [(MATRIX_FILE2)]" >&2
+        exit 500
     ;;
 esac
