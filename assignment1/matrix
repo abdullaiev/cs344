@@ -28,8 +28,29 @@ else
     matrix1=$tempFile
 fi
 
+#Checks that matrix 1 file is readable before attempting to read it.
+checkMatrix1File() {
+  if ! [ -r $matrix1 ];
+  then
+      echo "$matrix1 is not readable!"
+      exit 1
+  fi
+}
+
+#Same as above ^^
+checkMatrix2File() {
+  if ! [ -r $matrix2 ];
+  then
+      echo "$matrix2 is not readable!"
+      exit 1
+  fi
+}
+
+
 #Prints out the dimensions of the matrix.
 dims() {
+    checkMatrix1File
+
     lastLine=""
     rows=0
     columns=0
@@ -51,22 +72,32 @@ dims() {
 
 #Reflects the elements of the matrix along the main diagonal.
 transpose() {
+    checkMatrix1File
+
     echo $operation
 }
 
 #Returns a row with each element representing a mean of the corresponding column.
 mean() {
+    checkMatrix1File
+
     echo $operation
 }
 
 #Returns a new matrix which is a result of adding two matrices element-wise.
 #Returns an error if two matrices have different dimensions.
 add() {
+    checkMatrix1File
+    checkMatrix2File
+
     echo $operation
 }
 
 #Produces an MxP matrix as a product of MxN and NxP matrices.
 multiply() {
+    checkMatrix1File
+    checkMatrix2File
+
     echo $operation
 }
 
