@@ -201,7 +201,52 @@ mean() {
 #Returns an error if two matrices have different dimensions.
 add() {
     matricesCompatibleForAddition
-    echo $operation
+
+    #Write matrices into one temp file first.
+    numbers=""
+    while read -r row ; do
+        for number in $row ; do
+            numbers="$numbers $number"
+        done
+    done < $matrix1
+
+    while read -r row ; do
+        for number in $row ; do
+            numbers="$numbers $number"
+        done
+    done < $matrix2
+
+    #Convert the numbers string into an array.
+    numArray=($numbers)
+
+    #Calculate the number of elements in a matrix.
+    matrixDimensions="$(dims)"
+    matrixDimensionsArray=($matrixDimensions)
+    rows=${matrixDimensionsArray[0]}
+    cols=${matrixDimensionsArray[1]}
+    elements=$(expr $rows \* $cols)
+
+    #use the numbers from both matrices stored in numbers variable to calculate the sum of each element
+    count=0
+
+    for (( i=0; i<elements; i++ )) ; do
+        count=$(expr $count + 1)
+        m1Index=i
+        m2Index=$(expr $i + $elements)
+        m1Element=${numArray[$m1Index]}
+        m2Element=${numArray[$m2Index]}
+        sum=$(expr $m1Element + $m2Element)
+
+        echo -n $sum
+
+        #Add a new line.
+        if (( $count == $cols )) ; then
+            count=0
+            echo
+        else
+            echo -ne "\t"
+        fi
+    done
 }
 
 #Produces an MxP matrix as a product of MxN and NxP matrices.
@@ -230,4 +275,4 @@ case "$1" in
 esac
 
 #Clean up after script execution.
-rm -rf ./temp
+#rm -rf ./temp
