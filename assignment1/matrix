@@ -102,11 +102,15 @@ matricesCompatibleForProduct() {
     m1Dimensions="$(dims $matrix1)"
     m2Dimensions="$(dims $matrix2)"
 
+    #Convert dimensions into arrays
+    m1DimArray=($m1Dimensions)
+    m2DimArray=($m2Dimensions)
+
     #Last character of the string.
-    N1=${m1Dimensions: -1}
+    N1=${m1DimArray[1]}
 
     #First character of the string.
-    N2=${m2Dimensions:0:1}
+    N2=${m2DimArray[0]}
 
     if [[ "$N1" != "$N2" ]]; then
         echo "Two matrices MxN and NxP should have the same N for multiplication!" >&2
@@ -150,30 +154,20 @@ transpose() {
 
 #Returns a row with each element representing the mean of the corresponding column.
 mean() {
-    result=""
-    tempFile="./temp/mean$$"
-    m1Dims="$(dims)"
-    rows=${m1Dims:0:1}
-    cols=${m1Dims: -1}
+    matrixDimensions="$(dims)"
+    matrixDimensionsArray=($matrixDimensions)
+    rows=${matrixDimensionsArray[0]}
+    cols=${matrixDimensionsArray[1]}
 
-    #Write all numbers into a temp file.
+    #Write numbers into temp  column files.
     while read -r row ; do
+        count=0
         for number in $row ; do
-            echo $number >> $tempFile
+            count=$(expr $count + 1)
+            tempColFile="./temp/mean_col_$count"
+            echo $number >> $tempColFile
         done
     done < $matrix1
-
-    #Iterate over the numbers in the temp file to put them into temporary files representing each column
-    count=0
-    while read -r num ; do
-        count=$(expr $count + 1)
-        tempColFile="./temp/mean_col_$count"
-        echo $num >> $tempColFile
-
-        if (( $count == $cols )); then
-            count=0
-        fi
-    done < $tempFile
 
     #Iterate over temp column files to calculate the mean of each column.
     for ((col=1;col<=$cols;col++)); do
@@ -188,18 +182,19 @@ mean() {
         if (( $sum == 0 )); then
             average=0
         else
-            average=$(expr $sum / $rows)
+            average=$(( ($sum + ($rows/2)*( ($sum>0)*2-1 )) / $rows ))
         fi
 
         #If this is the average of the first column, no need to add the space in front of it.
         if (( $col == 1 )); then
-            result=$average
+            echo -n $average
         else
-            result="$result $average"
+            echo -ne "\t"
+            echo -n $average
         fi
     done
 
-    echo $result
+    echo
 }
 
 #Returns a new matrix which is a result of adding two matrices element-wise.
@@ -233,3 +228,6 @@ case "$1" in
         exit 500
     ;;
 esac
+
+#Clean up after script execution.
+rm -rf ./temp
