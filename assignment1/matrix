@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 #CS344 400 W2018
 #Program 1 - matrices
 #Illia Abdullaiev
@@ -185,7 +185,11 @@ mean() {
             sum=$(expr $sum + $num)
         done < $tempColFile
 
-        average=$(expr $sum / $rows)
+        if (( $sum == 0 )); then
+            average=0
+        else
+            average=$(expr $sum / $rows)
+        fi
 
         #If this is the average of the first column, no need to add the space in front of it.
         if (( $col == 1 )); then
