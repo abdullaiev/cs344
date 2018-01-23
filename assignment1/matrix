@@ -11,6 +11,7 @@ fromStdin=0
 
 #Create a folder for temporary files. Clean up any previous temp files.
 rm -rf ./temp
+mkdir temp
 
 if [ -t 0 ]; then
     #If there is nothing in stdin, treat second and the third parameters as matrix files.
@@ -21,7 +22,6 @@ else
     fromStdin=1
 
     #Create the temporary file to store the contents of stdin.
-    mkdir temp
     tempFile="./temp/$$"
 
     #Write contents of stdin into the temporary file.
@@ -148,9 +148,54 @@ transpose() {
     echo $operation
 }
 
-#Returns a row with each element representing a mean of the corresponding column.
+#Returns a row with each element representing the mean of the corresponding column.
 mean() {
-    echo $operation
+    result=""
+    tempFile="./temp/mean$$"
+    m1Dims="$(dims)"
+    rows=${m1Dims:0:1}
+    cols=${m1Dims: -1}
+
+    #Write all numbers into a temp file.
+    while read -r row ; do
+        for number in $row ; do
+            echo $number >> $tempFile
+        done
+    done < $matrix1
+
+    #Iterate over the numbers in the temp file to put them into temporary files representing each column
+    count=0
+    while read -r num ; do
+        count=$(expr $count + 1)
+        tempColFile="./temp/mean_col_$count"
+        echo $num >> $tempColFile
+
+        if (( $count == $cols )); then
+            count=0
+        fi
+    done < $tempFile
+
+    #Iterate over temp column files to calculate the mean of each column.
+    for ((col=1;col<=$cols;col++)); do
+        tempColFile="./temp/mean_col_$col"
+        sum=0
+
+        #Calucalte the sum of all the numbers in the column.
+        while read -r num ; do
+            sum=$(expr $sum + $num)
+        done < $tempColFile
+
+        average=$(expr $sum / $rows)
+
+        #If this is the average of the first column, no need to add the space in front of it.
+        if (( $col == 1 )); then
+            result=$average
+        else
+            result="$result $average"
+        fi
+    done
+
+    echo $result
 }
 
 #Returns a new matrix which is a result of adding two matrices element-wise.
