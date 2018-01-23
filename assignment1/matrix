@@ -252,7 +252,60 @@ add() {
 #Produces an MxP matrix as a product of MxN and NxP matrices.
 multiply() {
     matricesCompatibleForProduct
-    echo $operation
+
+    #Get matrices dimensions.
+    m1Dimensions="$(dims $matrix1)"
+    m2Dimensions="$(dims $matrix2)"
+    m1DimArray=($m1Dimensions)
+    m2DimArray=($m2Dimensions)
+    m1Rows=${m1DimArray[0]}
+    m1Cols=${m1DimArray[1]}
+    m2Cols=${m2DimArray[1]}
+
+    #Create temp column files for matrix 2.
+    while read -r row ; do
+        count=0
+        for number in $row ; do
+            count=$(expr $count + 1)
+            tempColFile="./temp/multiply_col_$count"
+            echo $number >> $tempColFile
+        done
+    done < $matrix2
+
+    #For every row in matrix1.
+    while read -r row ; do
+        #Get an array of numbers in this m1 row.
+        rowNumbersArray=($row)
+
+        #Multiply current m1 row by every m2 column.
+        for (( col=1; col<=m2Cols; col++ )) ; do
+            #Get an array of numbers in this m2 column.
+            tempColFile="./temp/multiply_col_$col"
+            colNumbers=""
+            while read -r num ; do
+                colNumbers="$colNumbers $num"
+            done < $tempColFile
+            colNumbersArray=($colNumbers)
+
+            #Multiply every element in m1 row by every element in m2 column and print out the result.
+            result=0
+            for (( i=0; i<m1Cols; i++ )) ; do
+                m1Num=${rowNumbersArray[$i]}
+                m2Num=${colNumbersArray[$i]}
+                product=$(expr $m1Num \* $m2Num)
+                result=$(expr $result + $product)
+            done
+            echo -ne $result
+
+            #Separate numbers by tab.
+            if (( $col != $m2Cols )) ; then
+                echo -ne "\t"
+            fi
+        done
+
+        #Add new line
+        echo
+    done < $matrix1
 }
 
 #Invokes the right function based on operation passed as the first parameter to the script.
@@ -276,3 +329,6 @@ esac
 
 #Clean up after script execution.
 #rm -rf ./temp
+
+#todo: no temp folder
+#todo: all files have process ID
