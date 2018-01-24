@@ -189,12 +189,12 @@ transpose() {
         echo $newRow > $tempColFile
 
         #Update count to start printing out the next row.
-#        if (( $count == $filesNum )) ; then
+        if (( $count == $filesNum )) ; then
 #            echo
-#            count=0
+            count=0
 #        else
 #            echo -ne "\t"
-#        fi
+        fi
 
         #Terminate the loop if the last row file is empty.
         if (( $count == 0 )) && (( $index == 0 )) ; then
