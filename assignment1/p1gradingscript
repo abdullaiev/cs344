@@ -296,15 +296,6 @@ m2="-93	50	-61	52	55	23	-67	65	-49	-45	-91	31	-12	0	10	80	21	79	24	-40
 45	-49	20	-27	78	-50	-31	15	22	52	-92	91	-94	-3	87	35	19	73	-98	31
 -22	41	89	-9	-19	17	11	-15	-94	-17	-46	37	26	-91	-27	61	-81	80	14	-79"
 
-echo "$m1" > "$tmp1"
-echo "$m2" > "$tmp2"
-
-echo "Expected: "
-echo "$m1"
-
-echo "Actual: "
-echo "$(./matrix transpose $tmp2)"
-
 [[ "$m1" == "$(./matrix transpose $tmp2)" ]] && [[ "$m2" == "$(./matrix transpose $tmp1)" ]]
 result "m1 == T(m2) and T(m1) == m2" 10
 
@@ -320,8 +311,14 @@ do
   m1="$(generate $rows $cols 100)"
   echo "$m1" > "$tmp1"
 
-  [[ "$m1" == "$(./matrix transpose $tmp1 | ./matrix transpose)" ]]
-  result "m$a == T(T(m$a))" 5
+  echo "Expected: "
+  echo "$m1"
+
+  echo "Actual: "
+  echo "$(./matrix transpose $tmp1 | ./matrix transpose)"
+
+#  [[ "$m1" == "$(./matrix transpose $tmp1 | ./matrix transpose)" ]]
+#  result "m$a == T(T(m$a))" 5
 done
 
 ###############################################################################
