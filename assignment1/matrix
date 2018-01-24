@@ -26,7 +26,7 @@ else
 
     #Write contents of stdin into the temporary file.
     while read -r line ; do
-        echo $line >> $tempFile
+        echo $line >> "$tempFile"
     done
 
     #Point matrix1 to the temporary file.
@@ -317,7 +317,7 @@ multiply() {
     #Create temp column files for matrix 2.
     while read -r row ; do
         count=0
-        for number in $row ; do
+        for number in $row ; do3
             count=$(expr $count + 1)
             tempColFile="$tempFilePrefix multiply_col $count"
             echo $number >> "$tempColFile"
