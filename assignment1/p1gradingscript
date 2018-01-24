@@ -311,14 +311,8 @@ do
   m1="$(generate $rows $cols 100)"
   echo "$m1" > "$tmp1"
 
-  echo "Expected: "
-  echo "$m1"
-
-  echo "Actual: "
-  echo "$(./matrix transpose $tmp1 | ./matrix transpose)"
-
-#  [[ "$m1" == "$(./matrix transpose $tmp1 | ./matrix transpose)" ]]
-#  result "m$a == T(T(m$a))" 5
+  [[ "$m1" == "$(./matrix transpose $tmp1 | ./matrix transpose)" ]]
+  result "m$a == T(T(m$a))" 5
 done
 
 ###############################################################################

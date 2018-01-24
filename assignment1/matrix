@@ -374,4 +374,5 @@ case "$1" in
 esac
 
 #Clean up after script execution.
-#rm -rf _temp_*
+mask="$tempFilePrefix*"
+rm -rf $mask
