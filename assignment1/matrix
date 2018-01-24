@@ -317,7 +317,7 @@ multiply() {
     #Create temp column files for matrix 2.
     while read -r row ; do
         count=0
-        for number in $row ; do3
+        for number in $row ; do
             count=$(expr $count + 1)
             tempColFile="$tempFilePrefix multiply_col $count"
             echo $number >> "$tempColFile"
