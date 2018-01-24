@@ -149,17 +149,69 @@ dims() {
 
 #Reflects the elements of the matrix along the main diagonal.
 transpose() {
-    echo $operation
+    #Write numbers into temp row files.
+    count=0
+    while read -r row ; do
+        count=$(expr $count + 1)
+        tempColFile="./temp/transpose_row_$count"
+        echo $row >> $tempColFile
+    done < $matrix1
+
+    #Until row files are not empty, take the first number from it and put into a column.
+    filesNum=$count
+    count=0
+    for (( ; ; )) ; do
+        count=$(expr $count + 1)
+        tempColFile="./temp/transpose_row_$count"
+        row=""
+
+        #This loop will be executing just once because temp row files have only one line.
+        while read -r line ; do
+            row=$line
+            numbers=($line)
+            echo -n ${numbers[0]}
+        done < $tempColFile
+
+        #Clear the temp file
+        rm -rf $tempColFile
+
+        #Put all numbers back to the temp file except the first one.
+        index=0
+        newRow=""
+        for num in $row ; do
+            if (( $index != 0 )) ; then
+                newRow="$newRow $num"
+            fi
+            index=$(expr $index + 1)
+        done
+
+        #Write the new string to the temp row file.
+        echo $newRow > $tempColFile
+
+        #Update count to start printing out the next row.
+        if (( $count == $filesNum )) ; then
+            echo
+            count=0
+        else
+            echo -ne "\t"
+        fi
+
+        #Terminate the loop if the last row file is empty.
+        if (( $count == 0 )) && (( $index == 0 )) ; then
+            break
+        fi
+    done
 }
 
 #Returns a row with each element representing the mean of the corresponding column.
 mean() {
+    #Get matrix dimensions.
     matrixDimensions="$(dims)"
     matrixDimensionsArray=($matrixDimensions)
     rows=${matrixDimensionsArray[0]}
     cols=${matrixDimensionsArray[1]}
 
-    #Write numbers into temp  column files.
+    #Write numbers into temp column files.
     while read -r row ; do
         count=0
         for number in $row ; do
@@ -328,7 +380,7 @@ case "$1" in
 esac
 
 #Clean up after script execution.
-#rm -rf ./temp
+rm -rf ./temp
 
 #todo: no temp folder
 #todo: all files have process ID
