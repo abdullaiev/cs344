@@ -190,7 +190,7 @@ transpose() {
 
         #Update count to start printing out the next row.
         if (( $count == $filesNum )) ; then
-            echo
+#            echo
             count=0
         else
             echo -ne " "
@@ -201,6 +201,7 @@ transpose() {
             break
         fi
     done
+    echo
 }
 
 #Returns a row with each element representing the mean of the corresponding column.
