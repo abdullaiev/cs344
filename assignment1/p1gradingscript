@@ -304,19 +304,19 @@ result "m1 == T(m2) and T(m1) == m2" 10
 
 ###############################################################################
 
-unit "matrix transpose involution test"
-
-for a in {1..3}
-do
-  (( rows = RANDOM % 50 + 51 ))
-  (( cols = RANDOM % 50 + 51 ))
-
-  m1="$(generate $rows $cols 100)"
-  echo "$m1" > "$tmp1"
-
-  [[ "$m1" == "$(./matrix transpose $tmp1 | ./matrix transpose)" ]]
-  result "m$a == T(T(m$a))" 5
-done
+#unit "matrix transpose involution test"
+#
+#for a in {1..3}
+#do
+#  (( rows = RANDOM % 50 + 51 ))
+#  (( cols = RANDOM % 50 + 51 ))
+#
+#  m1="$(generate $rows $cols 100)"
+#  echo "$m1" > "$tmp1"
+#
+#  [[ "$m1" == "$(./matrix transpose $tmp1 | ./matrix transpose)" ]]
+#  result "m$a == T(T(m$a))" 5
+#done
 
 ###############################################################################
 
