@@ -191,6 +191,7 @@ transpose() {
             echo -ne "\t"
         fi
 
+        #Exit once tha last column was printed.
         if (( $col == $cols )) ; then
             break
         fi

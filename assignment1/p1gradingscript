@@ -298,6 +298,13 @@ m2="-93	50	-61	52	55	23	-67	65	-49	-45	-91	31	-12	0	10	80	21	79	24	-40
 
 echo "$m1" > "$tmp1"
 echo "$m2" > "$tmp2"
+
+echo "Expected: "
+echo "$m1"
+
+echo "Actual: "
+echo "$(./matrix transpose $tmp2)"
+
 [[ "$m1" == "$(./matrix transpose $tmp2)" ]] && [[ "$m2" == "$(./matrix transpose $tmp1)" ]]
 result "m1 == T(m2) and T(m1) == m2" 10
 
