@@ -167,7 +167,6 @@ transpose() {
     done < $matrix1
 
     #Transpose the matrix by using row and col as indices.
-    max=$(expr $rows - 1)
     row=0
     col=0
     for (( ; ; )) ; do
@@ -183,7 +182,7 @@ transpose() {
         done < $tempRowFile
 
         #Move back to the first row.
-        if (( $row == $max )) ; then
+        if (( $row == $rows )) ; then
             echo
             row=0
             col=$(expr $col + 1)
