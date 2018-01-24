@@ -374,4 +374,4 @@ case "$1" in
 esac
 
 #Clean up after script execution.
-rm -rf _temp_*
+#rm -rf _temp_*
