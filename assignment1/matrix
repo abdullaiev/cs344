@@ -35,13 +35,13 @@ fi
 
 #Checks that matrix 1 file is readable before attempting to read it.
 checkMatrix1File() {
-    if ! [ -a $matrix1 ];
+    if ! [ -a "$matrix1" ];
     then
         echo "$matrix1 does not exist!" >&2
         exit 500
     fi
 
-    if ! [ -r $matrix1 ];
+    if ! [ -r "$matrix1" ];
     then
         echo "$matrix1 is not readable!" >&2
         exit 500
@@ -50,13 +50,13 @@ checkMatrix1File() {
 
 #Same as above ^^.
 checkMatrix2File() {
-    if ! [ -a $matrix2 ];
+    if ! [ -a "$matrix2" ];
     then
         echo "$matrix2 does not exist!" >&2
         exit 500
     fi
 
-    if ! [ -r $matrix2 ]; then
+    if ! [ -r "$matrix2" ]; then
         echo "$matrix2 is not readable!" >&2
         exit 500
     fi
@@ -155,7 +155,7 @@ transpose() {
         count=$(expr $count + 1)
         tempColFile="$tempFilePrefix transpose_row $count"
         echo $row >> "$tempColFile"
-    done < $matrix1
+    done < "$matrix1"
 
     #Until row files are not empty, take the first number from it and put into a column.
     filesNum=$count
@@ -219,7 +219,7 @@ mean() {
             tempColFile="$tempFilePrefix mean_col $count"
             echo $number >> "$tempColFile"
         done
-    done < $matrix1
+    done < "$matrix1"
 
     #Iterate over temp column files to calculate the mean of each column.
     for ((col=1;col<=$cols;col++)); do
@@ -260,13 +260,13 @@ add() {
         for number in $row ; do
             numbers="$numbers $number"
         done
-    done < $matrix1
+    done < "$matrix1"
 
     while read -r row ; do
         for number in $row ; do
             numbers="$numbers $number"
         done
-    done < $matrix2
+    done < "$matrix2"
 
     #Convert the numbers string into an array.
     numArray=($numbers)
@@ -322,7 +322,7 @@ multiply() {
             tempColFile="$tempFilePrefix multiply_col $count"
             echo $number >> "$tempColFile"
         done
-    done < $matrix2
+    done < "$matrix2"
 
     #For every row in matrix1.
     while read -r row ; do
@@ -357,7 +357,7 @@ multiply() {
 
         #Add new line
         echo
-    done < $matrix1
+    done < "$matrix1"
 }
 
 #Invokes the right function based on operation passed as the first parameter to the script.
