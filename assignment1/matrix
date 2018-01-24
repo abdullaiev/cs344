@@ -193,7 +193,7 @@ transpose() {
             echo
             count=0
         else
-            echo -ne "\t"
+            echo -ne " "
         fi
 
         #Terminate the loop if the last row file is empty.
