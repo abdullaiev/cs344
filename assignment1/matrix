@@ -203,7 +203,7 @@ transpose() {
 
         echo -n " "
     done
-    echo
+#    echo
 }
 
 #Returns a row with each element representing the mean of the corresponding column.
