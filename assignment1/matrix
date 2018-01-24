@@ -154,7 +154,7 @@ transpose() {
     while read -r row ; do
         count=$(expr $count + 1)
         tempColFile="$tempFilePrefix transpose_row $count"
-        echo $row >> $tempColFile
+        echo $row >> "$tempColFile"
     done < $matrix1
 
     #Until row files are not empty, take the first number from it and put into a column.
@@ -170,10 +170,10 @@ transpose() {
             row=$line
             numbers=($line)
             echo -n ${numbers[0]}
-        done < $tempColFile
+        done < "$tempColFile"
 
         #Clear the temp file
-        rm -rf $tempColFile
+        rm -rf "$tempColFile"
 
         #Put all numbers back to the temp file except the first one.
         index=0
@@ -186,7 +186,7 @@ transpose() {
         done
 
         #Write the new string to the temp row file.
-        echo $newRow > $tempColFile
+        echo $newRow > "$tempColFile"
 
         #Update count to start printing out the next row.
         if (( $count == $filesNum )) ; then
@@ -217,7 +217,7 @@ mean() {
         for number in $row ; do
             count=$(expr $count + 1)
             tempColFile="$tempFilePrefix mean_col $count"
-            echo $number >> $tempColFile
+            echo $number >> "$tempColFile"
         done
     done < $matrix1
 
@@ -229,7 +229,7 @@ mean() {
         #Calucalte the sum of all the numbers in the column.
         while read -r num ; do
             sum=$(expr $sum + $num)
-        done < $tempColFile
+        done < "$tempColFile"
 
         if (( $sum == 0 )); then
             average=0
@@ -320,7 +320,7 @@ multiply() {
         for number in $row ; do
             count=$(expr $count + 1)
             tempColFile="$tempFilePrefix multiply_col $count"
-            echo $number >> $tempColFile
+            echo $number >> "$tempColFile"
         done
     done < $matrix2
 
@@ -336,7 +336,7 @@ multiply() {
             colNumbers=""
             while read -r num ; do
                 colNumbers="$colNumbers $num"
-            done < $tempColFile
+            done < "$tempColFile"
             colNumbersArray=($colNumbers)
 
             #Multiply every element in m1 row by every element in m2 column and print out the result.
