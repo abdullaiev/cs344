@@ -1,3 +1,5 @@
+//Created by Illia Abdullaiev on 02/10/2018
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -186,8 +188,6 @@ void writeConnections(const char **allRooms, int randomRooms[], int connections[
         const char *roomName = allRooms[randomRooms[i]];
         char fileName[256];
         snprintf(fileName, sizeof fileName, "%s/%s%s", directoryName, roomName, extension);
-
-        printf("File name: %s\n", fileName);
 
         FILE *roomFile;
         roomFile = fopen(fileName, "w");
