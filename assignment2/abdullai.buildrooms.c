@@ -176,7 +176,7 @@ void generateConnections(int connections[][6], int rooms, int min) {
 
 //Writes the connections of each room into its own file.
 void writeConnections(const char **allRooms, int randomRooms[], int connections[][6], int roomsNumber) {
-    char extension[] = {".txt"};
+    char extension[] = {"_room"};
     char directoryName[30];
     getDirectoryName(directoryName);
 
@@ -195,7 +195,7 @@ void writeConnections(const char **allRooms, int randomRooms[], int connections[
             printf("Error creating the file for room %s", roomName);
         }
 
-        fprintf (roomFile, "ROOM NAME: %s\n", roomName);
+        fprintf(roomFile, "ROOM NAME: %s\n", roomName);
 
         const char *connection;
         for (; j < roomsNumber - 1; j++) {
@@ -204,17 +204,17 @@ void writeConnections(const char **allRooms, int randomRooms[], int connections[
             }
 
             connection = allRooms[randomRooms[connections[i][j]]];
-            fprintf (roomFile, "CONNECTION %D: %s\n", j + 1, connection);
+            fprintf(roomFile, "CONNECTION %D: %s\n", j + 1, connection);
         }
 
         j = 0;
 
         if (i == 0) {
-            fprintf (roomFile, "ROOM TYPE: START_ROOM\n");
+            fprintf(roomFile, "ROOM TYPE: START_ROOM\n");
         } else if (i == (roomsNumber - 1)) {
-            fprintf (roomFile, "ROOM TYPE: END_ROOM\n");
+            fprintf(roomFile, "ROOM TYPE: END_ROOM\n");
         } else {
-            fprintf (roomFile, "ROOM TYPE: MID_ROOM\n");
+            fprintf(roomFile, "ROOM TYPE: MID_ROOM\n");
         }
 
         fclose(roomFile);
@@ -253,5 +253,5 @@ int main(void) {
     //Write each room connections into its own file.
     writeConnections(allRooms, randomRooms, connections, RAND_ROOMS);
 
-    return 0;
+    exit(0);
 }
