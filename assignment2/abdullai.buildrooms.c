@@ -1,11 +1,10 @@
 //Created by Illia Abdullaiev on 02/10/2018
 
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <time.h>
 
 //Attaches processID to a hardcoded directory name.
 void getDirectoryName(char name[]) {
@@ -58,7 +57,7 @@ void getRandomRooms(int arr[], int NUMBER) {
 
 //Initializes connections array with -1 for every element.
 //-1 serves as an indicator of empty connection.
-void initializeConnections(int connections[][6], int length) {
+void initializeConnections(int connections[7][6], int length) {
     int i;
     int j;
 
@@ -66,8 +65,6 @@ void initializeConnections(int connections[][6], int length) {
         for (j = 0; j < length - 1; j++) {
             connections[i][j] = -1;
         }
-
-        j = 0;
     }
 }
 
@@ -93,7 +90,6 @@ int connectionsReady(int connections[][6], int length, int min) {
         }
 
         count = 0;
-        j = 0;
     }
 
     return 1;
@@ -101,8 +97,8 @@ int connectionsReady(int connections[][6], int length, int min) {
 
 //Returns a number of connections in a room by given index
 int numberOfConnections(int room[], int max) {
-    int i = 0;
-    for (; i < max; i++) {
+    int i;
+    for (i = 0; i < max; i++) {
         if (room[i] == -1) {
             return i;
         }
@@ -112,9 +108,9 @@ int numberOfConnections(int room[], int max) {
 
 //Checks if a room has a certain connection.
 int connectionExists(int room[], int max, int connection) {
-    int i = 0;
+    int i;
 
-    for (; i < max; i++) {
+    for (i = 0; i < max; i++) {
         if (room[i] == connection) {
             return 1;
         }
@@ -124,9 +120,9 @@ int connectionExists(int room[], int max, int connection) {
 }
 
 void addConnection(int room[], int max, int connection) {
-    int i = 0;
+    int i;
 
-    for (; i < max; i++) {
+    for (i = 0; i < max; i++) {
         if (room[i] == -1) {
             room[i] = connection;
             break;
@@ -139,7 +135,7 @@ void addConnection(int room[], int max, int connection) {
 void generateConnections(int connections[][6], int rooms, int min) {
     int max = rooms - 1;
 
-    while (connectionsReady(connections, rooms, 3) != 1) {
+    while (connectionsReady(connections, rooms, min) != 1) {
         int room1 = getRandomNumberInRange(0, max);
         int room2 = getRandomNumberInRange(0, max);
 
@@ -168,7 +164,12 @@ void generateConnections(int connections[][6], int rooms, int min) {
             continue;
         }
 
-        //6. If everything above checks, the connections can be added.
+        //6. Make sure that start room does not point to end room.
+        if ((room1 == 0 && room2 == max) || (room1 == max && room2 == 0)) {
+            continue;
+        }
+
+        //7. If everything above checks, the connections can be added.
         addConnection(connections[room1], max, room2);
         addConnection(connections[room2], max, room1);
     }
@@ -180,10 +181,10 @@ void writeConnections(const char **allRooms, int randomRooms[], int connections[
     char directoryName[30];
     getDirectoryName(directoryName);
 
-    int i = 0;
-    int j = 0;
+    int i;
+    int j;
 
-    for (; i < roomsNumber; i++) {
+    for (i = 0; i < roomsNumber; i++) {
         //construct file path
         const char *roomName = allRooms[randomRooms[i]];
         char fileName[256];
@@ -198,16 +199,14 @@ void writeConnections(const char **allRooms, int randomRooms[], int connections[
         fprintf(roomFile, "ROOM NAME: %s\n", roomName);
 
         const char *connection;
-        for (; j < roomsNumber - 1; j++) {
+        for (j = 0; j < roomsNumber - 1; j++) {
             if (connections[i][j] == -1) {
                 break;
             }
 
             connection = allRooms[randomRooms[connections[i][j]]];
-            fprintf(roomFile, "CONNECTION %D: %s\n", j + 1, connection);
+            fprintf(roomFile, "CONNECTION %d: %s\n", j + 1, connection);
         }
-
-        j = 0;
 
         if (i == 0) {
             fprintf(roomFile, "ROOM TYPE: START_ROOM\n");
@@ -223,7 +222,7 @@ void writeConnections(const char **allRooms, int randomRooms[], int connections[
 
 int main(void) {
     //Seed the random number generator.
-    srand(getpid());
+    srand(time(NULL));
 
     //Create a directory for the rooms.
     int result = createDirectory();
