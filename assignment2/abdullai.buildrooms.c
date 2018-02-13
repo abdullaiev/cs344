@@ -36,9 +36,12 @@ void getRandomRooms(int arr[], int NUMBER) {
     int contains = 0;
     int i;
 
+    //Fill the array with random numbers unless NUMBER-1 index is reached.
     while (count < NUMBER) {
         random = getRandomNumberInRange(0, 9);
 
+        //There cannot be two rooms with the same names in the game.
+        //Make sure that the new random number is not alrady in the array.
         for (i = 0; i < NUMBER; i++) {
             if (arr[i] == random) {
                 contains = 1;
@@ -46,6 +49,7 @@ void getRandomRooms(int arr[], int NUMBER) {
             }
         }
 
+        //Add random number to the array since it's unique.
         if (contains == 0) {
             arr[count] = random;
             count++;
@@ -119,9 +123,11 @@ int connectionExists(int room[], int max, int connection) {
     return 0;
 }
 
+//Connects given room to another one.
 void addConnection(int room[], int max, int connection) {
     int i;
 
+    //Find first available slot in the connections array and write there connection room index.
     for (i = 0; i < max; i++) {
         if (room[i] == -1) {
             room[i] = connection;
@@ -135,6 +141,7 @@ void addConnection(int room[], int max, int connection) {
 void generateConnections(int connections[][6], int rooms, int min) {
     int max = rooms - 1;
 
+    //Build a new connection between two rooms until all rooms are ready.
     while (connectionsReady(connections, rooms, min) != 1) {
         int room1 = getRandomNumberInRange(0, max);
         int room2 = getRandomNumberInRange(0, max);
@@ -192,12 +199,15 @@ void writeConnections(const char **allRooms, int randomRooms[], int connections[
 
         FILE *roomFile;
         roomFile = fopen(fileName, "w");
+
+        //Write room name.
         if (roomFile == NULL) {
             printf("Error creating the file for room %s", roomName);
         }
 
         fprintf(roomFile, "ROOM NAME: %s\n", roomName);
 
+        //Write room connections.
         const char *connection;
         for (j = 0; j < roomsNumber - 1; j++) {
             if (connections[i][j] == -1) {
@@ -208,6 +218,7 @@ void writeConnections(const char **allRooms, int randomRooms[], int connections[
             fprintf(roomFile, "CONNECTION %d: %s\n", j + 1, connection);
         }
 
+        //Write room type.
         if (i == 0) {
             fprintf(roomFile, "ROOM TYPE: START_ROOM\n");
         } else if (i == (roomsNumber - 1)) {
