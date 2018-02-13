@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <time.h>
 
 struct room {
     char name[256];
@@ -144,19 +145,23 @@ int findRoom(struct room rooms[], char query[], char type[]) {
 }
 
 //Prints out current possible connections to other room and stores user's input in the passed input string.
-void askForInput(struct room rooms[], int currentRoom, char input[]) {
-    printf("CURRENT LOCATION: %s\n", rooms[currentRoom].name);
-    printf("POSSIBLE CONNECTIONS: ");
+void askForInput(struct room rooms[], int currentRoom, char input[], int askedTime) {
+    if (askedTime == 0) {
+        printf("CURRENT LOCATION: %s\n", rooms[currentRoom].name);
+        printf("POSSIBLE CONNECTIONS: ");
 
-    int i = 0;
-    while (rooms[currentRoom].connections[i][0] != '*') {
-        if (i != 0) {
-            printf(", ");
+        int i = 0;
+        while (rooms[currentRoom].connections[i][0] != '*') {
+            if (i != 0) {
+                printf(", ");
+            }
+            printf("%s", rooms[currentRoom].connections[i]);
+            i++;
         }
-        printf("%s", rooms[currentRoom].connections[i]);
-        i++;
+        printf(".\n");
     }
-    printf(".\nWHERE TO? >");
+
+    printf("WHERE TO? >");
     fgets(input, 256, stdin);
 
     //Remove the new line symbol.
@@ -192,6 +197,31 @@ void congratulateUser(char path[][256], int steps) {
     }
 }
 
+//Gets current user's time , formats it as "1:03pm, Tuesday, September 13, 2016" and stores into file currentTime.txt.
+void writeCurrentTime() {
+    char timeStr[256];
+    struct tm *tmStruct;
+    time_t currentTime;
+    currentTime = time(NULL);
+    tmStruct = localtime(&currentTime);
+    strftime(timeStr, sizeof(timeStr), "%I:%M%p, %A, %B %d, %Y", tmStruct);
+
+    //Save parsed time into the file.
+    FILE *filePointer = fopen("currentTime.txt", "w");
+    fprintf(filePointer, "%s", timeStr);
+    fclose(filePointer);
+}
+
+//Reads time stored in currentTime.txt and prints it to the console.
+void readCurrentTime() {
+    char *line = NULL;
+    size_t len = 0;
+    FILE *filePointer = fopen("currentTime.txt", "r");
+    getline(&line, &len, filePointer);
+    printf("%s\n\n", line);
+    fclose(filePointer);
+}
+
 //Starts asking the user for input and ends the game once the end-room is reached.
 void startGame(struct room rooms[]) {
     int steps = 0;
@@ -199,24 +229,42 @@ void startGame(struct room rooms[]) {
     int endRoom = findRoom(rooms, "END_ROOM", "type");
     char path[1000][256];
     char input[256];
+    //When set to 1, current room and possible connections will not be logged out.
+    int askedTime = 0;
 
     while (1) {
-        askForInput(rooms, currentRoom, input);
+        askForInput(rooms, currentRoom, input, askedTime);
+        askedTime = 0;
 
-        if (isInputValid(rooms, currentRoom, input) == 1) {
-            currentRoom = findRoom(rooms, input, "name");
-            //Save this room to the path taken.
-            snprintf(path[steps], 256, "%s", input);
+        //Check if the user wishes to see current time.
+        if (strcmp(input, "time") == 0) {
+            askedTime = 1;
+            writeCurrentTime();
+            readCurrentTime();
+            continue;
+        }
 
-            //Update steps count.
-            steps++;
+        //Validate the input otherwise.
+        int isValid = isInputValid(rooms, currentRoom, input);
 
-            //Check if this is the end room.
-            if (currentRoom == endRoom) {
-                snprintf(path[steps], 256, "*");
-                congratulateUser(path, steps);
-                break;
-            }
+        //If input is not valid, do not update steps taken and the history of rooms visited.
+        if (isValid == 0) {
+            continue;
+        }
+
+        currentRoom = findRoom(rooms, input, "name");
+        //Save this room to the path taken.
+        snprintf(path[steps], 256, "%s", input);
+
+        //Update steps count.
+        steps++;
+
+        //Check if this is the end room.
+        if (currentRoom == endRoom) {
+            //Use an asterisk as the end of path delimiter.
+            snprintf(path[steps], 256, "*");
+            congratulateUser(path, steps);
+            break;
         }
     }
 }
