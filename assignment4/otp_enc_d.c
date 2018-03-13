@@ -4,8 +4,12 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <netinet/in.h>
 
+//This is encryption SERVER.
 
 // Error function used for reporting issues
 void error(const char *msg) {
@@ -13,7 +17,7 @@ void error(const char *msg) {
     exit(1);
 }
 
-char* getGoodChars() {
+char *getGoodChars() {
     return "ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
 }
 
@@ -30,12 +34,23 @@ int getCharIndex(char ch) {
 }
 
 int replyToClient(char *msg, int establishedConnectionFD) {
-    //todo loop until everything is sent
-    int charsRead = send(establishedConnectionFD, msg, strlen(msg), 0); // Send success back
+    int charsSent = send(establishedConnectionFD, msg, strlen(msg), 0);
 
-    if (charsRead < 0) {
+    if (charsSent < 0) {
         error("ERROR writing to socket");
     }
+
+    // Bytes remaining in send buffer
+    int checkSend = -5;
+    do {
+        ioctl(establishedConnectionFD, TIOCOUTQ, &checkSend);  // Check the send buffer for this socket
+    } while (checkSend > 0);  // Loop forever until send buffer for this socket is empty
+
+    // Check if we actually stopped the loop because of an error
+    if (checkSend < 0) {
+        error("ioctl error");
+    }
+
     // Close the existing socket which is connected to the client
     close(establishedConnectionFD);
 
@@ -80,7 +95,8 @@ int main(int argc, char *argv[]) {
     while (1) {
         // Accept a connection, blocking if one is not available until one connects
         sizeOfClientInfo = sizeof(clientAddress); // Get the size of the address for the client that will connect
-        establishedConnectionFD = accept(listenSocketFD, (struct sockaddr *) &clientAddress, &sizeOfClientInfo); // Accept
+        establishedConnectionFD = accept(listenSocketFD, (struct sockaddr *) &clientAddress,
+                                         &sizeOfClientInfo); // Accept
 
         if (establishedConnectionFD < 0) {
             error("ERROR on accept");
@@ -121,18 +137,9 @@ int main(int argc, char *argv[]) {
                 //Use buffer size to make sure the while loop doesn't go over buffer contents.
                 int bufferSize = strlen(buffer);
                 while (buffer[index] != '@' && index != bufferSize) {
-                    //Test that the char is not bad.
-                    if (getCharIndex(buffer[index]) == -1) {
-                        replyToClient("otp_enc error: input contains bad characters", establishedConnectionFD);
-                    }
                     plainText[plainTextCount] = buffer[index];
                     index++;
                     plainTextCount++;
-                }
-
-                //Check that we didn't reach the end of the request message before saving the key.
-                if (index == bufferSize || buffer[index+1] != '@') {
-                    replyToClient("otp_enc error: no key provided!", establishedConnectionFD);
                 }
 
                 //Increment the index to skip @@ between plain text and key.
@@ -142,21 +149,9 @@ int main(int argc, char *argv[]) {
                 char key[MAX_SIZE];
                 int keyCount = 0;
                 while (buffer[index] != '@' && index != bufferSize) {
-                    //Test that the char is not bad.
-                    if (getCharIndex(buffer[index]) == -1) {
-                        replyToClient("otp_enc error: input contains bad characters", establishedConnectionFD);
-                    }
                     plainText[keyCount] = buffer[index];
                     index++;
                     keyCount++;
-                }
-
-
-                //Make sure key length is at least the same as text's.
-                char errorMessage[256];
-                if (plainTextCount > keyCount) {
-                    sprintf(errorMessage, "Error: key ‘%s’ is too short", key);
-                    replyToClient(errorMessage, establishedConnectionFD);
                 }
 
                 //Encrypt the text.
@@ -167,7 +162,7 @@ int main(int argc, char *argv[]) {
                 for (int i = 0; i < plainTextCount; i++) {
                     plainTextPosition = getCharIndex(plainText[i]);
                     keyPosition = getCharIndex(key[i]);
-                    encryptedPosition = plainTextPosition + keyPosition - 27;
+                    encryptedPosition = (plainTextPosition + keyPosition) % 27;
                     encryptedMessage[i] = getGoodChars()[encryptedPosition];
                 }
 
