@@ -11,10 +11,13 @@
 #define h_addr h_addr_list[0] /* for backward compatibility */
 
 //This is encryption CLIENT.
+//This program reads plain text form the first param file.
+//It then sends that plaintext along with the key to encryption server to do the actual encryption.
+//Once ciphertext is received back from server, it is printed out to stdout.
 
 // Error function used for reporting issues
 void error(const char *msg) {
-    perror(msg);
+    fprintf(stderr, "%s\n", msg);
     exit(1);
 }
 
@@ -45,6 +48,7 @@ int main(int argc, char *argv[]) {
     int MAX_SIZE = 500000;
     char buffer[MAX_SIZE];
     char plainText[MAX_SIZE];
+    char key[MAX_SIZE];
 
     if (argc < 4) {
         fprintf(stderr, "USAGE: %s <plaintext> <key> <port>\n", argv[0]);
@@ -68,13 +72,27 @@ int main(int argc, char *argv[]) {
     //Check that plain text does not contain bad characters
     checkForBadChars(plainText);
 
+    //Read the key from provided file.
+    filePointer = fopen(argv[2], "r");
+    if (filePointer == NULL) {
+        error("Could not open key file to read.\n");
+    }
+    fgets(key, MAX_SIZE, filePointer);
+    fclose(filePointer);
+
+    //Remove trailing new lines chars
+    length = strlen(key);
+    if (key[length - 1] == '\n') {
+        key[length - 1] = '\0';
+    }
+
     //Make sure that the key does not have bad characters either
-    checkForBadChars(argv[2]);
+    checkForBadChars(key);
 
     //Check that the key length is at least the same as plain text's length.
     char errorMsg[MAX_SIZE];
-    if (strlen(argv[2]) < strlen(plainText)) {
-        sprintf(errorMsg, "Error: key ‘%s’ is too short", argv[2]);
+    if (strlen(key) < strlen(plainText)) {
+        sprintf(errorMsg, "Error: key ‘%s’ is too short\n", argv[2]);
         error(errorMsg);
     }
 
@@ -83,7 +101,7 @@ int main(int argc, char *argv[]) {
     portNumber = atoi(argv[3]); // Get the port number, convert to an integer from a string
     serverAddress.sin_family = AF_INET; // Create a network-capable socket
     serverAddress.sin_port = htons(portNumber); // Store the port number
-    serverHostInfo = gethostbyname("locahost"); // Convert the machine name into a special form of address
+    serverHostInfo = gethostbyname("127.0.0.1"); // Convert the machine name into a special form of address
 
     if (serverHostInfo == NULL) {
         fprintf(stderr, "CLIENT: ERROR, no such host\n");

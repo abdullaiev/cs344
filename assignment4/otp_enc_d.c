@@ -10,10 +10,12 @@
 #include <netinet/in.h>
 
 //This is encryption SERVER.
+//It receives plain text and key from client and performs actual encryption.
+//Ciphertext is being sent to the client then.
 
 // Error function used for reporting issues
 void error(const char *msg) {
-    perror(msg);
+    fprintf(stderr, "%s\n", msg);
     exit(1);
 }
 
@@ -60,6 +62,8 @@ int replyToClient(char *msg, int establishedConnectionFD) {
 
 int main(int argc, char *argv[]) {
     const int MAX_SIZE = 500000;
+    const int PROCESSES = 2048;
+    pid_t backgroundProcessIDs[PROCESSES];
     int listenSocketFD, establishedConnectionFD, portNumber, charsRead;
     socklen_t sizeOfClientInfo;
     char buffer[MAX_SIZE];
@@ -69,6 +73,11 @@ int main(int argc, char *argv[]) {
     if (argc < 2) {
         fprintf(stderr, "USAGE: %s port\n", argv[0]);
         exit(1);
+    }
+
+    //Initialize process arrays with zero values. It will show that the element by certain index has not been initialized.
+    for (int i = 0; i < PROCESSES; i++) {
+        backgroundProcessIDs[i] = 0;
     }
 
     // Set up the address struct for this process (the server)
@@ -93,6 +102,22 @@ int main(int argc, char *argv[]) {
     listen(listenSocketFD, 5); // Flip the socket on - it can now receive up to 5 connections
 
     while (1) {
+        //Check for any completed background processes.
+        for (int i = 0; i < PROCESSES; i++) {
+            if (backgroundProcessIDs[i] != 0) {
+                //Do not block execution of this parent process if child has not completed yet.
+                int existStatus;
+                int processCompleted = waitpid(backgroundProcessIDs[i], &existStatus, WNOHANG);
+                if (processCompleted != 0) {
+                    if (WIFEXITED(existStatus)) {
+                        backgroundProcessIDs[i] = 0;
+                    } else if (WIFSIGNALED(existStatus)) {
+                        backgroundProcessIDs[i] = 0;
+                    }
+                }
+            }
+        }
+
         // Accept a connection, blocking if one is not available until one connects
         sizeOfClientInfo = sizeof(clientAddress); // Get the size of the address for the client that will connect
         establishedConnectionFD = accept(listenSocketFD, (struct sockaddr *) &clientAddress,
@@ -119,7 +144,6 @@ int main(int argc, char *argv[]) {
                 if (charsRead < 0) {
                     error("ERROR reading from socket");
                 }
-                printf("SERVER: I received this from the client: \"%s\"\n", buffer);
 
                 //Verify connections comes from otp_enc.
                 //This server expects the request text to be in format @@<plain_text>@@<key>@@
@@ -149,7 +173,7 @@ int main(int argc, char *argv[]) {
                 char key[MAX_SIZE];
                 int keyCount = 0;
                 while (buffer[index] != '@' && index != bufferSize) {
-                    plainText[keyCount] = buffer[index];
+                    key[keyCount] = buffer[index];
                     index++;
                     keyCount++;
                 }
@@ -159,21 +183,27 @@ int main(int argc, char *argv[]) {
                 int keyPosition;
                 int encryptedPosition;
                 char encryptedMessage[MAX_SIZE];
-                for (int i = 0; i < plainTextCount; i++) {
+                int i = 0;
+                for (; i < plainTextCount; i++) {
                     plainTextPosition = getCharIndex(plainText[i]);
                     keyPosition = getCharIndex(key[i]);
                     encryptedPosition = (plainTextPosition + keyPosition) % 27;
                     encryptedMessage[i] = getGoodChars()[encryptedPosition];
                 }
+                encryptedMessage[i] = '\0';
 
                 //Send the encrypted text to the client
                 replyToClient(encryptedMessage, establishedConnectionFD);
             }
             default: {
                 //This is the parent process.
-                //Wait for the child process to finish so it does not become a zombie.
+                //Save child process ID so it can be killed later once it's done.
                 //Do not block execution though to allow for multiple incoming requests.
-                waitpid(forkProcessID, &childExitMethod, WNOHANG);
+                int countP = 0;
+                while (backgroundProcessIDs[countP] != 0) {
+                    countP++;
+                }
+                backgroundProcessIDs[countP] = forkProcessID;
             }
         }
     }
