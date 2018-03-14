@@ -23,6 +23,7 @@ char *getGoodChars() {
     return "ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
 }
 
+//A helper function to return a char's index in the array of accepted chars above.
 int getCharIndex(char ch) {
     char *goodChars = getGoodChars();
     const int CHAR_QTY = strlen(goodChars);
@@ -35,6 +36,7 @@ int getCharIndex(char ch) {
     return -1;
 }
 
+//A helper function that sends a message back to client within given communication socket.
 int replyToClient(char *msg, int establishedConnectionFD) {
     int charsSent = send(establishedConnectionFD, msg, strlen(msg), 0);
 
@@ -61,7 +63,7 @@ int replyToClient(char *msg, int establishedConnectionFD) {
 }
 
 int main(int argc, char *argv[]) {
-    const int MAX_SIZE = 500000;
+    const int MAX_SIZE = 150000;
     const int PROCESSES = 2048;
     pid_t backgroundProcessIDs[PROCESSES];
     int listenSocketFD, establishedConnectionFD, portNumber, charsRead;
@@ -140,7 +142,7 @@ int main(int argc, char *argv[]) {
                 // This is the child process
                 // Get the message from the client and display it
                 memset(buffer, '\0', MAX_SIZE);
-                charsRead = recv(establishedConnectionFD, buffer, 255, 0); // Read the client's message from the socket
+                charsRead = recv(establishedConnectionFD, buffer, MAX_SIZE - 1, 0); // Read the client's message from the socket
                 if (charsRead < 0) {
                     error("ERROR reading from socket");
                 }
@@ -148,9 +150,8 @@ int main(int argc, char *argv[]) {
                 //Verify connections comes from otp_enc.
                 //This server expects the request text to be in format @@<plain_text>@@<key>@@
                 if (buffer[0] != '@' || buffer[1] != '@') {
-                    error("Connection is not from a trusted source!");
-                    close(establishedConnectionFD);
-                    exit(1);
+                    //"!" means that request is not authorizes
+                    replyToClient("!", establishedConnectionFD);
                 }
 
                 //Save plain text first.
@@ -165,6 +166,7 @@ int main(int argc, char *argv[]) {
                     index++;
                     plainTextCount++;
                 }
+                plainText[plainTextCount] = '\0';
 
                 //Increment the index to skip @@ between plain text and key.
                 index += 2;
@@ -177,6 +179,7 @@ int main(int argc, char *argv[]) {
                     index++;
                     keyCount++;
                 }
+                key[keyCount] = '\0';
 
                 //Encrypt the text.
                 int plainTextPosition;

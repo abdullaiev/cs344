@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
     int socketFD, portNumber;
     struct sockaddr_in serverAddress;
     struct hostent *serverHostInfo;
-    int MAX_SIZE = 500000;
+    int MAX_SIZE = 150000;
     char buffer[MAX_SIZE];
     char plainText[MAX_SIZE];
     char key[MAX_SIZE];
@@ -126,7 +126,7 @@ int main(int argc, char *argv[]) {
     memset(buffer, '\0', sizeof(buffer));
 
     //Save the plain text and the key to be sent to the server in "@@<plain_text>@@<key>@@" format/
-    sprintf(buffer, "@@%s@@%s@@", plainText, argv[2]);
+    sprintf(buffer, "@@%s@@%s@@", plainText, key);
 
     // Send message to server
     ssize_t charsWritten = send(socketFD, buffer, strlen(buffer), 0); // Write to the server
@@ -151,6 +151,12 @@ int main(int argc, char *argv[]) {
 
     if (charsRead < 0) {
         error("CLIENT: ERROR reading from socket");
+    }
+
+    //Auth error occurred. Print out a message and exit with code 2.
+    if (buffer[0] == '!') {
+        fprintf(stderr, "Error: could not contact otp_enc_d on port %s\n", argv[3]);
+        exit(2);
     }
 
     //Print out the received text to stdout. It should print the ciphertext.
