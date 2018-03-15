@@ -21,6 +21,7 @@ void error(const char *msg) {
     exit(1);
 }
 
+//A helper function that checks if given string contains any non-accepted chars such as lower case letters or special symbols.
 void checkForBadChars(char *str) {
     char *goodChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
     size_t strLength = strlen(str);
@@ -125,8 +126,8 @@ int main(int argc, char *argv[]) {
     //Clear out the buffer array
     memset(buffer, '\0', sizeof(buffer));
 
-    //Save the plain text and the key to be sent to the server in "@@<plain_text>@@<key>@@" format/
-    sprintf(buffer, "@@%s@@%s@@", plainText, key);
+    //Save the plain text and the key to be sent to the server in "@@<plain_text>&&<key>@@" format/
+    sprintf(buffer, "@@%s&&%s@@", plainText, key);
 
     // Send message to server
     ssize_t charsWritten = send(socketFD, buffer, strlen(buffer), 0); // Write to the server

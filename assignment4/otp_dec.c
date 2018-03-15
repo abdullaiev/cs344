@@ -63,13 +63,13 @@ int main(int argc, char *argv[]) {
     fgets(plainText, MAX_SIZE, filePointer);
     fclose(filePointer);
 
-    //Remove trailing new lines chars
+    //Remove the trailing new line char.
     size_t length = strlen(plainText);
     if (plainText[length - 1] == '\n') {
         plainText[length - 1] = '\0';
     }
 
-    //Check that plain text does not contain bad characters
+    //Check that plain text does not contain bad characters.
     checkForBadChars(plainText);
 
     //Read the key from provided file.
@@ -80,13 +80,13 @@ int main(int argc, char *argv[]) {
     fgets(key, MAX_SIZE, filePointer);
     fclose(filePointer);
 
-    //Remove trailing new lines chars
+    //Remove the trailing new line char.
     length = strlen(key);
     if (key[length - 1] == '\n') {
         key[length - 1] = '\0';
     }
 
-    //Make sure that the key does not have bad characters either
+    //Make sure that the key does not have bad characters either.
     checkForBadChars(key);
 
     //Check that the key length is at least the same as plain text's length.
@@ -125,8 +125,8 @@ int main(int argc, char *argv[]) {
     //Clear out the buffer array
     memset(buffer, '\0', sizeof(buffer));
 
-    //Save the plain text and the key to be sent to the server in "^^<plain_text>^^<key>^^" format/
-    sprintf(buffer, "^^%s^^%s^^", plainText, key);
+    //Save the plain text and the key to be sent to the server in "^^<plain_text>&&<key>@@" format.
+    sprintf(buffer, "^^%s&&%s@@", plainText, key);
 
     // Send message to server
     ssize_t charsWritten = send(socketFD, buffer, strlen(buffer), 0); // Write to the server
@@ -159,7 +159,7 @@ int main(int argc, char *argv[]) {
         exit(2);
     }
 
-    //Print out the received text to stdout. It should print the ciphertext.
+    //Print out the received text to stdout. This will print the ciphertext.
     printf("%s\n", buffer);
 
     //Close the connection.

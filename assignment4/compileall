@@ -1,4 +1,5 @@
 #!/bin/bash
+killall -q -u $USER otp*
 gcc -o otp_enc_d otp_enc_d.c -std=c99
 gcc -o otp_enc otp_enc.c -std=c99
 gcc -o otp_dec_d otp_dec_d.c -std=c99

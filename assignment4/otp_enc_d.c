@@ -68,6 +68,7 @@ int main(int argc, char *argv[]) {
     pid_t backgroundProcessIDs[PROCESSES];
     int listenSocketFD, establishedConnectionFD, portNumber, charsRead;
     socklen_t sizeOfClientInfo;
+    char completeMessage[MAX_SIZE];
     char buffer[MAX_SIZE];
     struct sockaddr_in serverAddress, clientAddress;
 
@@ -141,15 +142,25 @@ int main(int argc, char *argv[]) {
             case 0: {
                 // This is the child process
                 // Get the message from the client and display it
-                memset(buffer, '\0', MAX_SIZE);
-                charsRead = recv(establishedConnectionFD, buffer, MAX_SIZE - 1, 0); // Read the client's message from the socket
-                if (charsRead < 0) {
-                    error("ERROR reading from socket");
+                memset(completeMessage, '\0', MAX_SIZE);
+
+                //Read the client's message from the socket until the message is read in full.
+                while(completeMessage[strlen(completeMessage) - 1] != '@') {
+                    memset(buffer, '\0', MAX_SIZE);
+                    charsRead = recv(establishedConnectionFD, buffer, MAX_SIZE - 1, 0);
+                    if (charsRead < 0) {
+                        error("ERROR reading from socket");
+                    }
+                    sprintf(completeMessage, "%s%s", completeMessage, buffer);
                 }
+
+                //Copy complete message back to buffer
+                memset(buffer, '\0', MAX_SIZE);
+                sprintf(buffer, "%s", completeMessage);
 
                 //Verify connections comes from otp_enc.
                 //This server expects the request text to be in format @@<plain_text>@@<key>@@
-                if (buffer[0] != '@' || buffer[1] != '@') {
+                if (completeMessage[0] != '@' || completeMessage[1] != '@') {
                     //"!" means that request is not authorizes
                     replyToClient("!", establishedConnectionFD);
                 }
@@ -160,22 +171,22 @@ int main(int argc, char *argv[]) {
                 int plainTextCount = 0;
 
                 //Use buffer size to make sure the while loop doesn't go over buffer contents.
-                int bufferSize = strlen(buffer);
-                while (buffer[index] != '@' && index != bufferSize) {
-                    plainText[plainTextCount] = buffer[index];
+                int messageSize = strlen(completeMessage);
+                while (buffer[index] != '&' && index != messageSize) {
+                    plainText[plainTextCount] = completeMessage[index];
                     index++;
                     plainTextCount++;
                 }
                 plainText[plainTextCount] = '\0';
 
-                //Increment the index to skip @@ between plain text and key.
+                //Increment the index to skip && between plain text and key.
                 index += 2;
 
                 //Get the key
                 char key[MAX_SIZE];
                 int keyCount = 0;
-                while (buffer[index] != '@' && index != bufferSize) {
-                    key[keyCount] = buffer[index];
+                while (completeMessage[index] != '@' && index != messageSize) {
+                    key[keyCount] = completeMessage[index];
                     index++;
                     keyCount++;
                 }

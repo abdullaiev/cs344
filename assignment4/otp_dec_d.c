@@ -37,7 +37,7 @@ int getCharIndex(char ch) {
     return -1;
 }
 
-//A helper function that sends a message back to client within given communication socket.
+//A helper function that sends a message back to client within the given communication socket.
 int replyToClient(char *msg, int establishedConnectionFD) {
     int charsSent = send(establishedConnectionFD, msg, strlen(msg), 0);
 
@@ -70,6 +70,7 @@ int main(int argc, char *argv[]) {
     int listenSocketFD, establishedConnectionFD, portNumber, charsRead;
     socklen_t sizeOfClientInfo;
     char buffer[MAX_SIZE];
+    char completeMessage[MAX_SIZE];
     struct sockaddr_in serverAddress, clientAddress;
 
     // Check usage & args
@@ -142,39 +143,49 @@ int main(int argc, char *argv[]) {
             case 0: {
                 // This is the child process
                 // Get the message from the client and display it
-                memset(buffer, '\0', MAX_SIZE);
-                charsRead = recv(establishedConnectionFD, buffer, MAX_SIZE - 1, 0); // Read the client's message from the socket
-                if (charsRead < 0) {
-                    error("ERROR reading from socket");
+                memset(completeMessage, '\0', MAX_SIZE);
+                //Read the client's message from the socket until the message is read in full.
+                while(completeMessage[strlen(completeMessage) - 1] != '@') {
+                    memset(buffer, '\0', MAX_SIZE);
+                    charsRead = recv(establishedConnectionFD, buffer, MAX_SIZE - 1, 0);
+                    if (charsRead < 0) {
+                        error("ERROR reading from socket");
+                    }
+                    sprintf(completeMessage, "%s%s", completeMessage, buffer);
                 }
 
+                //Copy complete message back to buffer
+                memset(buffer, '\0', MAX_SIZE);
+                sprintf(buffer, "%s", completeMessage);
+
                 //Verify connections comes from otp_enc.
-                //This server expects the request text to be in format ^^<cipher_text>^^<key>^^
+                //This server expects the request text to be in format ^^<cipher_text>&&<key>@@.
+                //Reject this request if the format is different.
                 if (buffer[0] != '^' || buffer[1] != '^') {
                     replyToClient("!", establishedConnectionFD);
                 }
 
-                //Save Ciphertext first.
+                //Save ciphertext first.
                 char cipherText[MAX_SIZE];
                 int index = 2;
                 int cipherTextCount = 0;
 
-                //Use buffer size to make sure the while loop doesn't go over buffer contents.
+                //Use buffer size to make sure that while loop doesn't go over buffer contents.
                 int bufferSize = strlen(buffer);
-                while (buffer[index] != '^' && index != bufferSize) {
+                while (buffer[index] != '&' && index != bufferSize) {
                     cipherText[cipherTextCount] = buffer[index];
                     index++;
                     cipherTextCount++;
                 }
                 cipherText[cipherTextCount] = '\0';
 
-                //Increment the index to skip ^^ between ciphertext and key.
+                //Increment the index to skip && between ciphertext and key.
                 index += 2;
 
                 //Get the key
                 char key[MAX_SIZE];
                 int keyCount = 0;
-                while (buffer[index] != '^' && index != bufferSize) {
+                while (buffer[index] != '@' && index != bufferSize) {
                     key[keyCount] = buffer[index];
                     index++;
                     keyCount++;
